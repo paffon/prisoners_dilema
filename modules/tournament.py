@@ -9,29 +9,30 @@ class Tournament:
     def __init__(self, strategies: List[Strategy],
                  copies_of_each_strategy: int,
                  rounds_per_game: int,
+                 games_between_players: int,
                  initial_player_score: int,
                  top_percentage: float,
                  mistake_chance: float,
                  debug: bool = False):
 
-        self.copies_of_each_strategy = copies_of_each_strategy
         self.rounds_per_game = rounds_per_game
+        self.games_between_players = games_between_players
         self.top_percentage = top_percentage  # the percentage of top players to be multiplied to the next round
         self.mistake_chance = mistake_chance
         self.debug = debug
 
-        self.players = self.generate_players(strategies, initial_player_score)
+        self.players = self.generate_players(strategies, copies_of_each_strategy, initial_player_score)
 
         self.total_players = len(self.players)
 
         self.games = self.setup_games()
 
-    def generate_players(self, strategies, initial_player_score):
+    def generate_players(self, strategies, copies_of_each_strategy, initial_player_score):
         players = []
         for strategy in strategies:
             self.my_print(f'Generating {strategy.name}')
             strategy_name = strategy.name
-            for i in range(self.copies_of_each_strategy):
+            for i in range(copies_of_each_strategy):
                 new_player = Player(name=strategy_name + ' #' + str(i).zfill(0),
                                     strategy=strategy,
                                     initial_score=initial_player_score)
@@ -49,7 +50,7 @@ class Tournament:
             for player_2 in self.players:
                 player_1.reset()
                 player_2.reset()
-                for i in range(self.rounds_per_game):
+                for i in range(self.games_between_players):
                     name_1 = player_1.name
                     name_2 = player_2.name
                     game_name = f'#{str(games_counter).zfill(3)} {name_1} vs. {name_2}'
@@ -80,7 +81,7 @@ class Tournament:
         total_of_normalized_scores = sum(normalized_scores)
         percentages = [ns / total_of_normalized_scores for ns in normalized_scores]
         amounts = [round(self.total_players * p) for p in percentages]
-        amounts[0] = self.total_players - sum(amounts[1:])
+        amounts[-1] = self.total_players - sum(amounts[:-1])
 
         players = []
 
@@ -115,9 +116,10 @@ if __name__ == '__main__':
     tournament = Tournament(strategies=tournament_strategies,
                             copies_of_each_strategy=5,
                             rounds_per_game=100,
+                            games_between_players=3,
                             initial_player_score=100,
-                            top_percentage=0.5,
-                            mistake_chance=0.05,
+                            top_percentage=0.25,
+                            mistake_chance=0.00,
                             debug=False)
 
     generations = 5

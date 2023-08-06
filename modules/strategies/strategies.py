@@ -81,7 +81,7 @@ class Cowboy(Strategy):
     but once you cheat me more times than my limit,
     I'll never cooperate again"""
 
-    def __init__(self, defined_limit: int = 1):
+    def __init__(self, defined_limit: int = 2):
         super().__init__('Cowboy')
         self.limit = defined_limit
 
