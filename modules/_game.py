@@ -24,13 +24,11 @@ class Game:
         return 0 if action_value == 1 else 1
 
     def run(self, mistake_chance: float = .0):
-        self.my_print(f'\t\t\t{self.player_1.strategy.name}\t\t\t{self.player_2.strategy.name}')
-        self.my_print('-' * 50)
         for round_number in range(self.rounds):
             self.round_number = round_number
 
-            action_1 = self.player_1.act(self.moves_1, self.moves_2)
-            action_2 = self.player_2.act(self.moves_2, self.moves_1)
+            action_1, thoughts_1 = self.player_1.get_action_and_thoughts(self.moves_1, self.moves_2)
+            action_2, thoughts_2 = self.player_2.get_action_and_thoughts(self.moves_2, self.moves_1)
 
             flip_1 = random.random() < mistake_chance
             flip_2 = random.random() < mistake_chance
@@ -41,9 +39,12 @@ class Game:
             print_action_1_final = f'->{action_1_final}' if flip_1 else '\t'
             print_action_2_final = f'->{action_2_final}' if flip_2 else '\t'
 
-            print_actions = f'\nRound {round_number}\t\t{action_1 = }{print_action_1_final}' \
-                            f' \t{action_2 = }{print_action_2_final}'
+            print_actions = f'\nRound {str(round_number + 1).zfill(2)}\t\t' \
+                            f'{self.player_1.name} {action_1}{print_action_1_final}' \
+                            f' \t{self.player_2.name} {action_2}{print_action_2_final}'
             self.my_print(print_actions)
+            if self.debug:
+                self.print_two_paragraphs(thoughts_1, thoughts_2)
 
             add_1, sub_1, add_2, sub_2 = self.calculate_gains_losses(action_1_final,
                                                                      action_2_final)
@@ -54,7 +55,7 @@ class Game:
             self.player_2.update_score(add_2, sub_2)
 
             tabs = '\t' * 5
-            print_scores = f'\t\t\t{self.player_1.score}{tabs}{self.player_2.score}'
+            print_scores = f'\t\t\t\t{self.player_1.score}{tabs}{self.player_2.score}'
             self.my_print(print_scores)
 
     @staticmethod
@@ -66,17 +67,60 @@ class Game:
 
         return add_1, sub_1, add_2, sub_2
 
+    @staticmethod
+    def print_two_paragraphs(sentence_1, sentence_2):
+        def split_string_by_length(input_string, n):
+            return [input_string[j:j + n] for j in range(0, len(input_string), n)]
+
+        paragraph_width = 15
+
+        res1 = split_string_by_length(sentence_1, paragraph_width)
+        res2 = split_string_by_length(sentence_2, paragraph_width)
+
+        left_tabs = '\t' * 4
+        middle_tabs = '\t' * 2
+
+        lines = []
+
+        for i in range(max([len(res1), len(res2)])):
+            left_text = res1[i] if i < len(res1) else ''
+            left_text_length = len(left_text)
+
+            left_padding = paragraph_width - left_text_length
+            left_spaces = ' ' * left_padding
+
+            left_part = left_text + left_spaces
+
+            right_text = res2[i] if i < len(res2) else ''
+
+            new_line = left_tabs + left_part + middle_tabs + right_text
+
+            lines.append(new_line)
+
+        print('\n'.join(lines))
 
 if __name__ == '__main__':
+    debug = True
     initial_scores = 100
-    p1 = Player(name='p1', strategy=CopyKitten(), initial_score=initial_scores)
-    p2 = Player(name='p2', strategy=CopyCat(), initial_score=initial_scores)
+    goody = GoodyTwoShoes()
+    cheater = Cheater()
+    joker = Joker()
+    copycat = CopyCat()
+    copy_kitten = CopyKitten(defined_limit=2)
+    cowboy = Cowboy(defined_limit=3)
+    businessman = Businessman(random_actions=2, kindness_limit=.5, begin_cooperation=2, copy_kitten_limit=2)
+
+    strategy_1 = copy_kitten
+    strategy_2 = copycat
+
+    p1 = Player(name=strategy_1.name, strategy=strategy_1, initial_score=initial_scores, debug=debug)
+    p2 = Player(name=strategy_2.name, strategy=strategy_2, initial_score=initial_scores, debug=debug)
 
     game = Game(player_1=p1, player_2=p2,
                 name='test game', rounds=10,
                 debug=True)
 
-    game.run(mistake_chance=0.25)
+    game.run(mistake_chance=0.75)
 
-    # print(p1, '\n\t', game.moves_1)
-    # print(p2, '\n\t', game.moves_2)
+
+

@@ -10,7 +10,7 @@ class GoodyTwoShoes(Strategy):
 
     @staticmethod
     def get_recommended_action(self_moves, opponent_moves):
-        return 1
+        return 1, "I always cooperate"
 
 
 class Cheater(Strategy):
@@ -21,7 +21,7 @@ class Cheater(Strategy):
 
     @staticmethod
     def get_recommended_action(self_moves, opponent_moves):
-        return 0
+        return 0, "I always cheat"
 
 
 class Joker(Strategy):
@@ -32,7 +32,7 @@ class Joker(Strategy):
 
     @staticmethod
     def get_recommended_action(self_moves, opponent_moves):
-        return round(random.random())
+        return round(random.random()), "I am crazy!"
 
 
 class CopyCat(Strategy):
@@ -45,9 +45,9 @@ class CopyCat(Strategy):
     @staticmethod
     def get_recommended_action(self_moves, opponent_moves):
         if len(self_moves) == 0:
-            return 1
+            return 1, "I start by cooperating"
         else:
-            return opponent_moves[-1]
+            return opponent_moves[-1], "I just copy you"
 
 
 class CopyKitten(Strategy):
@@ -61,19 +61,19 @@ class CopyKitten(Strategy):
     def get_recommended_action(self, self_moves, opponent_moves):
         limit = self.limit
         if len(self_moves) < limit:
-            return 1
+            return 1, "I am starting by cooperating"
         else:
             my_last_action = self_moves[-1]
             sum_of_last_n_opponent_actions = sum(opponent_moves[-limit:0])
 
             if my_last_action == 1 and sum_of_last_n_opponent_actions == 0:
                 # I was cooperating, but opponent cheated too many times and now I'll cheat
-                return 0
+                return 0, "I was cooperating, but you cheated more than my limit"
             elif my_last_action == 0 and sum_of_last_n_opponent_actions == limit:
                 # I was cheating, but opponent cooperated enough times for me to cooperate
-                return 1
+                return 1, "I was cheating, but you cooperated more than my limit"
             else:
-                return my_last_action
+                return my_last_action, "You haven not given me a reason to change my action"
 
 
 class Cowboy(Strategy):
@@ -84,15 +84,14 @@ class Cowboy(Strategy):
     def __init__(self, defined_limit: int = 1):
         super().__init__('Cowboy')
         self.limit = defined_limit
-        self.trust_is_broken = False
 
     def get_recommended_action(self, self_moves, opponent_moves):
-        if self.trust_is_broken:
-            return 0
+        opponent_cheating_counter = sum([opponent_action == 0 for opponent_action in opponent_moves])
 
-        if sum([opponent_action == 0 for opponent_action in opponent_moves]) >= self.limit:
-            self.trust_is_broken = True
-            return 0
+        if opponent_cheating_counter >= self.limit:
+            return 0, f"My limit was {self.limit} and you have broken my trust {opponent_cheating_counter} time(s) ({opponent_moves})"
+        else:
+            return 1, "You have not yet broken my trust, so I am cooperating"
 
 
 class Businessman(Strategy):
@@ -112,7 +111,7 @@ class Businessman(Strategy):
         if random_actions < copy_kitten_limit:
             raise ValueError('cannot be')
 
-        super().__init__('Cowboy')
+        super().__init__('Businessman')
 
         self.random_actions = random_actions
         self.kindness_limit = kindness_limit
@@ -123,24 +122,24 @@ class Businessman(Strategy):
 
     def get_recommended_action(self, self_moves, opponent_moves):
         if self.they_are_suckers:
-            return 0
+            return 0, "I am taking advantage of your kindness"
 
         if self.behave_like_copy_kitten:
             return self.copy_kitten.get_recommended_action(
-                    self_moves=self_moves,
-                    opponent_moves=opponent_moves)
+                self_moves=self_moves,
+                opponent_moves=opponent_moves)
 
         rounds_played = len(self_moves)
 
         if rounds_played < self.random_actions:
-            return round(random.random())
+            return round(random.random()), "I am testing the waters with random actions"
 
         elif rounds_played == self.random_actions:
             forgiveness_percentage = self.calculate_forgiveness_percentage(self_moves, opponent_moves)
 
             if forgiveness_percentage >= self.kindness_limit:
                 self.they_are_suckers = True
-                return 0
+                return self.get_recommended_action(self_moves, opponent_moves)
             else:
                 self.behave_like_copy_kitten = True
                 return self.copy_kitten.get_recommended_action(
@@ -160,14 +159,10 @@ class Businessman(Strategy):
         return forgiveness_percentage
 
 
-# if __name__ == '__main__':
-#     self_moves =       [1,0,1,1,0]
-#     opponent_moves = [0,1,0,0,0]
-#
-#     my_moves_without_last = self_moves[:-1]
-#     their_moves_without_first = opponent_moves[1:]
-#     zipped = zip(my_moves_without_last, their_moves_without_first)
-#
-#     forgiveness = sum([tup[0] == 0 and tup[1] == 1 for tup in zipped])
-#
-#     print(forgiveness)
+class EverythingEveryWhereAllAtOnce(Strategy):
+    # TODO: a strategy that randomly picks another strategy to use each time
+    pass
+
+
+if __name__ == '__main__':
+    pass

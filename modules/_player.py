@@ -4,13 +4,18 @@ import re
 
 
 class Player:
-    def __init__(self, name: str, strategy: Strategy, initial_score: int, version: int = 0):
+    def __init__(self, name: str, strategy: Strategy, initial_score: int, version: int = 0, debug: bool = False):
         self.name = name
         self.strategy = strategy
         self.score = self.initial_score = initial_score
         self.moves = []
         self.version = version
         self.scores_history = []
+        self.debug = debug
+
+    def my_print(self, obj):
+        if self.debug:
+            print(obj)
 
     def __repr__(self):
         return f'"{self.name}" [{self.strategy.name}, {self.score:}]'
@@ -20,10 +25,10 @@ class Player:
         self.score += add
         self.score += subtract
 
-    def act(self, self_moves, opponent_moves):
-        action = self.strategy.get_recommended_action(self_moves, opponent_moves)
+    def get_action_and_thoughts(self, self_moves, opponent_moves):
+        action, thoughts = self.strategy.get_recommended_action(self_moves, opponent_moves)
         self.moves.append(action)
-        return action
+        return action, thoughts
 
     def reset(self):
         self.moves = []
