@@ -1,11 +1,8 @@
 from typing import List
-from _strategy import Strategy
 from _player import Player
 from _game import Game
-from strategies.cheater import Cheater
-from strategies.goody_two_shoes import GoodyTwoShoes
-from strategies.joker import Joker
-from strategies.copycat import Copycat
+from strategies.strategies import *
+import math
 
 
 class Tournament:
@@ -13,10 +10,12 @@ class Tournament:
                  copies_of_each_strategy: int,
                  rounds_per_game: int,
                  initial_player_score: int,
-                 top_percentage: float):
+                 top_percentage: float,
+                 mistake_chance: float):
         self.copies_of_each_strategy = copies_of_each_strategy
         self.rounds_per_game = rounds_per_game
         self.top_percentage = top_percentage  # the percentage of top players to be multiplied to the next round
+        self.mistake_chance = mistake_chance
 
         self.players: List[Player] = []
         for strategy in strategies:
@@ -52,22 +51,16 @@ class Tournament:
                     games_counter += 1
 
     def run(self):
-        print('Running Tournament...')
         for game in self.games:
-            game.run()
-        print('Tournament finished!')
+            game.run(mistake_chance=self.mistake_chance)
 
     def sort_players(self):
         self.players.sort(key=lambda player: player.score, reverse=True)
 
     def multiply_top_players(self):
-        print('Sorting players...')
         self.sort_players()
-        print('Players sorted!')
 
-        print('Multiplying top players...')
-
-        top_count = round(len(self.players) * self.top_percentage)
+        top_count = math.ceil(len(self.players) * self.top_percentage)
         top_players = self.players[:top_count]
 
         max_score = max([player.score for player in top_players])
@@ -84,10 +77,8 @@ class Tournament:
 
         self.players = players
 
-        print('Top players multiplied!')
-
     def get_players_data(self):
-        return '\n'.join([str(player) for player in self.players])
+        return '\n'.join([f'{i+1}.\t{player}' for i, player in enumerate(self.players)])
 
 
 if __name__ == '__main__':
@@ -95,14 +86,18 @@ if __name__ == '__main__':
         GoodyTwoShoes(),
         Cheater(),
         Joker(),
-        Copycat()
+        CopyCat(),
+        CopyKitten(),
+        Cowboy(),
+        Businessman()
     ]
 
     tournament = Tournament(strategies=tournament_strategies,
                             copies_of_each_strategy=5,
-                            rounds_per_game=10,
+                            rounds_per_game=20,
                             initial_player_score=100,
-                            top_percentage=.8)
+                            top_percentage=0.9,
+                            mistake_chance=0.0)
 
     generations = 10
 
@@ -112,4 +107,5 @@ if __name__ == '__main__':
         tournament.run()
         tournament.multiply_top_players()
 
+    print('Winners:')
     print(tournament.get_players_data())
