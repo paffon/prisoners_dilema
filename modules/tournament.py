@@ -3,6 +3,7 @@ from _player import Player
 from _game import Game
 from strategies.strategies import *
 import math
+from visuals.tournament_visualizer import *
 
 
 class Tournament:
@@ -25,15 +26,12 @@ class Tournament:
 
         self.total_players = len(self.players)
 
-        self.games = self.setup_games()
-
     def generate_players(self, strategies, copies_of_each_strategy, initial_player_score):
         players = []
         for strategy in strategies:
             self.my_print(f'Generating {strategy.name}')
-            strategy_name = strategy.name
             for i in range(copies_of_each_strategy):
-                new_player = Player(name=strategy_name + ' #' + str(i).zfill(0),
+                new_player = Player(name=f'{strategy.name} #{str(i).zfill(0)}',
                                     strategy=strategy,
                                     initial_score=initial_player_score)
                 players.append(new_player)
@@ -64,17 +62,24 @@ class Tournament:
         return games
 
     def run(self):
-        for game in self.games:
+        games = self.setup_games()
+        for game in games:
             game.run(mistake_chance=self.mistake_chance)
 
     def sort_players(self):
-        self.players.sort(key=lambda player: player.score, reverse=True)
+        self.players.sort(key=lambda player: float(player.score), reverse=True)
 
-    def multiply_top_players(self):
+    def get_top_players(self):
         self.sort_players()
 
         top_count = math.ceil(len(self.players) * self.top_percentage)
+
         top_players = self.players[:top_count]
+        return top_players
+
+    def multiply_top_players(self):
+
+        top_players = self.get_top_players()
 
         max_score = max([player.score for player in top_players])
         normalized_scores = [player.score / max_score for player in top_players]
@@ -88,7 +93,21 @@ class Tournament:
         for player, amount in zip(top_players, amounts):
             players += [player.multiply() for _ in range(amount)]
 
-        self.players = players
+        score_groups = {}
+        for player in players:
+            score_groups.setdefault(player.score, []).append(player)
+
+        # Shuffle the players within each score group
+        for score_group in score_groups.values():
+            random.shuffle(score_group)
+
+        # Flatten the list to get the final mixed order of players
+        mixed_players = [player for score_group in score_groups.values() for player in score_group]
+
+        # Now mixed_players contains the list of Player objects with the same score shuffled randomly,
+        # while still being sorted by their score from high to low.
+
+        self.players = mixed_players
 
     def get_players_data(self):
         return '\n'.join([f'{i + 1}.\t{player}' for i, player in enumerate(self.players)])
@@ -96,7 +115,7 @@ class Tournament:
     def get_strategies_counter(self):
         strategies_counter = {}
         for player in self.players:
-            strategy_name = player.strategy.name
+            strategy_name = str(player.strategy)
             amount = strategies_counter.get(strategy_name, 0) + 1
             strategies_counter[strategy_name] = amount
         return strategies_counter
@@ -108,28 +127,41 @@ if __name__ == '__main__':
         Cheater(),
         Joker(),
         CopyCat(),
-        CopyKitten(),
-        Cowboy(),
-        Businessman()
+        CopyKitten(defined_limit=2),
+        Cowboy(defined_limit=5),
+        Businessman(random_actions=9, kindness_limit=0, begin_cooperation=2, copy_kitten_limit=2)
     ]
 
     tournament = Tournament(strategies=tournament_strategies,
-                            copies_of_each_strategy=5,
+                            copies_of_each_strategy=10,
                             rounds_per_game=100,
-                            games_between_players=3,
-                            initial_player_score=100,
+                            games_between_players=2,
+                            initial_player_score=0,
                             top_percentage=0.25,
-                            mistake_chance=0.00,
+                            mistake_chance=0.01,
                             debug=False)
 
-    generations = 5
-    names = [strategy.name for strategy in tournament_strategies]
-    d = tournament.get_strategies_counter()
-    new_d = {name: str(d.get(name, 0)).zfill(3) for name in names}
-    print(f'Initial conditions:\n{new_d}\n')
+    generations = 0
+
+    strategies_components = []
+
+    names = [str(strategy) for strategy in tournament_strategies]
     for generation in range(generations):
-        tournament.run()
-        tournament.multiply_top_players()
         d = tournament.get_strategies_counter()
         new_d = {name: str(d.get(name, 0)).zfill(3) for name in names}
-        print(f'After tournament #{generation+1}:\n{new_d}\n')
+        strategies_components.append(new_d)
+        print(f'\nBefore tournament #{generation + 1}:\n{new_d}\n')
+
+        tournament.run()
+        tournament.sort_players()
+
+        tournament.multiply_top_players()
+
+    d = tournament.get_strategies_counter()
+    new_d = {name: str(d.get(name, 0)).zfill(3) for name in names}
+    strategies_components.append(new_d)
+    print(f'\nAfter tournament s:\n{new_d}\n')
+
+    d = {key: value for key, value in tournament.__dict__.items() if key not in ['players', 'debug']}
+
+    visualize(strategies_components, d)
