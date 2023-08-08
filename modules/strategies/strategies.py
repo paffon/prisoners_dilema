@@ -106,14 +106,12 @@ class Businessman(Strategy):
 
     def __init__(self, random_actions: int = 2,
                  kindness_limit: float = 1.0,
-                 begin_cooperation: int = 2,
                  copy_kitten_limit: int = 2):
         if random_actions < copy_kitten_limit:
             raise ValueError('cannot be')
 
         self.random_actions = random_actions
         self.kindness_limit = kindness_limit
-        self.begin_cooperation = begin_cooperation
         self.copy_kitten = CopyKitten(copy_kitten_limit)
         self.behave_like_copy_kitten = False
         self.they_are_suckers = False

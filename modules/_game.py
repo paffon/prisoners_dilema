@@ -48,7 +48,7 @@ class Game:
 
                 print_actions = f'\nRound {str(round_number + 1).zfill(2)}\t\t' +\
                                 left_part +\
-                                f'\t\t{self.player_2.strategy.name} {action_2}{print_action_2_final}\n'
+                                f'\t{self.player_2.strategy.name} {action_2}{print_action_2_final}\n'
 
                 self.my_print(print_actions)
 
@@ -123,16 +123,16 @@ if __name__ == '__main__':
     copycat = CopyCat()
     copy_kitten = CopyKitten(defined_limit=2)
     cowboy = Cowboy(defined_limit=3)
-    businessman = Businessman(random_actions=4, kindness_limit=0, begin_cooperation=2, copy_kitten_limit=2)
+    businessman = Businessman(random_actions=4, kindness_limit=0, copy_kitten_limit=2)
 
-    strategy_1 = goody
-    strategy_2 = businessman
+    strategy_1 = cowboy
+    strategy_2 = copy_kitten
 
     p1 = Player(name=strategy_1.name, strategy=strategy_1, initial_score=initial_scores, debug=debug)
     p2 = Player(name=strategy_2.name, strategy=strategy_2, initial_score=initial_scores, debug=debug)
 
     game = Game(player_1=p1, player_2=p2,
-                name='test game', rounds=20,
+                name='test game', rounds=100,
                 debug=True)
 
-    game.run(mistake_chance=0.0)
+    game.run(mistake_chance=0.05)

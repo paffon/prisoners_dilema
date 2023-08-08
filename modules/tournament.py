@@ -129,7 +129,7 @@ if __name__ == '__main__':
         CopyCat(),
         CopyKitten(defined_limit=2),
         Cowboy(defined_limit=5),
-        Businessman(random_actions=9, kindness_limit=0, begin_cooperation=2, copy_kitten_limit=2)
+        Businessman(random_actions=4, kindness_limit=0.5, copy_kitten_limit=2)
     ]
 
     tournament = Tournament(strategies=tournament_strategies,
@@ -141,7 +141,7 @@ if __name__ == '__main__':
                             mistake_chance=0.01,
                             debug=False)
 
-    generations = 0
+    generations = 10
 
     strategies_components = []
 
@@ -160,7 +160,7 @@ if __name__ == '__main__':
     d = tournament.get_strategies_counter()
     new_d = {name: str(d.get(name, 0)).zfill(3) for name in names}
     strategies_components.append(new_d)
-    print(f'\nAfter tournament s:\n{new_d}\n')
+    print(f'\nAfter all tournaments:\n{new_d}\n')
 
     d = {key: value for key, value in tournament.__dict__.items() if key not in ['players', 'debug']}
 
