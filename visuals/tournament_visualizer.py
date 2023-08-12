@@ -70,17 +70,15 @@ def create_plot(df):
         if bar.get_height() > 0:
             x = bar.get_x() + bar.get_width() / 2
             y = bar.get_height()/2 + bar.get_y()
-            full_label = labels[int((i+1) / total_columns)].split(' ', 1)
-            label_top = full_label[0]
-            label_bottom = '\n' + full_label[1] if len(full_label) > 1 else ''
-            label = label_top + label_bottom
+            index = int(i / total_columns)
+            full_label = labels[index].split(' ', 1)
+            label = full_label[0]  # no need to print the rest, it's visible in the legend
             ax.text(
                 x, y, label,
                 ha='center',
                 color='black',
                 size=6
             )
-            print(i+1, '\t', bar.get_height())
 
     return fig, ax
 

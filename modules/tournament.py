@@ -133,21 +133,21 @@ if __name__ == '__main__':
         Sequential(sequence=[1, 0, 0, 1, 1, 0]),
         Alternator(alternate_after=2, start_with=1),
         Pavlovian(start_with=1),
-        # Forgiver(grudge_limit=3, copy_kitten_limit=2, copy_kitten_start_with=1),
-        # GenerousCopyKat(forgiveness_prob=0.2),
-        # SoftMajorityRule(start_with=1),
+        Forgiver(grudge_limit=3, copy_kitten_limit=2, copy_kitten_start_with=1),
+        GenerousCopyKat(forgiveness_prob=0.2),
+        SoftMajorityRule(start_with=1),
     ]
 
     tournament = Tournament(strategies=tournament_strategies,
-                            copies_of_each_strategy=2,
+                            copies_of_each_strategy=10,
                             rounds_per_game=100,
-                            games_between_players=2,
-                            initial_player_score=0,
-                            top_percentage=0.5,
-                            mistake_chance=0.01,
+                            games_between_players=3,
+                            initial_player_score=100,
+                            top_percentage=0.15,
+                            mistake_chance=0.05,
                             debug=False)
 
-    generations = 3
+    generations = 10
 
     strategies_components = []
 

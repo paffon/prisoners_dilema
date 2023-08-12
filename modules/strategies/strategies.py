@@ -489,3 +489,6 @@ class SoftMajorityRule(Strategy):
 
 if __name__ == '__main__':
     pass
+
+# TODO all strategies that start with random, must randomize this variable at the beginning of each
+#  game
