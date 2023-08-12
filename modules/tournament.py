@@ -133,13 +133,13 @@ if __name__ == '__main__':
         Sequential(sequence=[1, 0, 0, 1, 1, 0]),
         Alternator(alternate_after=2, start_with=1),
         Pavlovian(start_with=1),
-        Forgiver(grudge_limit=3, copy_kitten_limit=2, copy_kitten_start_with=1),
-        GenerousCopyKat(forgiveness_prob=0.2),
-        SoftMajorityRule(start_with=1),
+        # Forgiver(grudge_limit=3, copy_kitten_limit=2, copy_kitten_start_with=1),
+        # GenerousCopyKat(forgiveness_prob=0.2),
+        # SoftMajorityRule(start_with=1),
     ]
 
     tournament = Tournament(strategies=tournament_strategies,
-                            copies_of_each_strategy=3,
+                            copies_of_each_strategy=2,
                             rounds_per_game=100,
                             games_between_players=2,
                             initial_player_score=0,
