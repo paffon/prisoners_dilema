@@ -7,8 +7,11 @@ class Strategy(ABC):
         self.name = name
 
     def __repr__(self):
-        return f'{self.name}({self.__dict__})'
+        all_values = ', '.join([str(v) for k,v in self.__dict__.items() if k != 'name'])
+        if len(all_values) > 0:
+            s = ' [' + all_values + ']'
+        else:
+            s = ''
+        result = f'{self.name}{s}'
 
-    @staticmethod
-    def get_recommended_action(self_moves, opponent_moves):
-        return round(random.random())
+        return result

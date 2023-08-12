@@ -117,19 +117,26 @@ class Game:
 if __name__ == '__main__':
     debug = True
     initial_scores = 100
+
     goody = GoodyTwoShoes()
     cheater = Cheater()
-    joker = Joker()
-    copycat = CopyCat()
-    copy_kitten = CopyKitten(defined_limit=2)
-    cowboy = Cowboy(defined_limit=3)
-    businessman = Businessman(random_actions=4, kindness_limit=0, copy_kitten_limit=2)
+    joker = Joker(threshold_to_cooperate=0.5)
+    copycat = CopyCat(start_with=None)
+    copy_kitten = CopyKitten(defined_limit=2, start_with=1)
+    businessman = Businessman(random_actions=4, kindness_limit=0, copy_kitten_limit=2, copy_kitten_start_with=1)
+    grudger = Grudger(defined_limit=3)
+    sequential = Sequential(sequence=[1, 0, 0, 1, 1, 0])
+    alternator = Alternator(alternate_after=2, start_with=1)
+    pavlovian = Pavlovian(start_with=1)
+    forgiver = Forgiver(grudge_limit=3, copy_kitten_limit=2, copy_kitten_start_with=1)
+    generous_cat = GenerousCopyKat(forgiveness_prob=0.2)
+    soft_majority = SoftMajorityRule(start_with=1)
 
-    strategy_1 = cowboy
+    strategy_1 = soft_majority
     strategy_2 = copy_kitten
 
-    p1 = Player(name=strategy_1.name, strategy=strategy_1, initial_score=initial_scores, debug=debug)
-    p2 = Player(name=strategy_2.name, strategy=strategy_2, initial_score=initial_scores, debug=debug)
+    p1 = Player(name=strategy_1.name.lower(), strategy=strategy_1, initial_score=initial_scores, debug=debug)
+    p2 = Player(name=strategy_2.name.lower(), strategy=strategy_2, initial_score=initial_scores, debug=debug)
 
     game = Game(player_1=p1, player_2=p2,
                 name='test game', rounds=100,
