@@ -43,15 +43,16 @@ class CopyCat(Strategy):
     then imitates opponent"""
 
     def __init__(self, start_with):
+        self.start_with = start_with
         self.start_with_random = start_with is None
-        self.start_with = random.randint(0, 1) if start_with is None else start_with
         super().__init__('CopyCat')
 
     def get_recommended_action(self, self_moves, opponent_moves):
         if len(self_moves) == 0:
             # If no previous moves, start with the specified action or randomly
             thought = "I start randomly" if self.start_with_random else f"I start with a fixed action"
-            return self.start_with, thought
+            action = random.randint(0, 1) if self.start_with_random else self.start_with
+            return action, thought
         else:
             return opponent_moves[-1], "I copy you"
 
@@ -66,7 +67,7 @@ class CopyKitten(Strategy):
     def __init__(self, defined_limit, start_with):
         self.limit = defined_limit
         self.start_with_random = start_with is None
-        self.start_with = random.randint(0, 1) if start_with is None else start_with
+        self.start_with = start_with
         super().__init__('CopyKitten')
 
     def get_recommended_action(self, self_moves, opponent_moves):
@@ -76,7 +77,8 @@ class CopyKitten(Strategy):
         if len(self_moves) < limit:
             # If no previous moves, start with the specified action or randomly
             thought = "I start randomly" if self.start_with_random else f"I start with a fixed action"
-            return self.start_with, thought
+            action = random.randint(0, 1) if self.start_with_random else self.start_with
+            return action, thought
         else:
             my_last_action = self_moves[-1]
             sum_of_last_n_opponent_actions = sum(opponent_moves[-limit:])
@@ -265,16 +267,12 @@ class Alternator(Strategy):
         None
         """
         # Determine the starting action based on provided value or random choice
-        start_with = random.randint(0, 1) if start_with is None else start_with
-        other_element = 0 if start_with else 1
+        self.start_with_random = start_with is None
+        self.start_with = start_with
 
-        # Create the alternating sequence of actions
-        first_part = [start_with] * alternate_after
-        other_part = [other_element] * alternate_after
-        sequence = first_part + other_part
+        self.alternate_after = alternate_after
 
-        # Initialize a Sequential strategy using the alternating sequence
-        self.sequential = Sequential(sequence=sequence)
+        self.sequential = None
 
         super().__init__('Alternator')
 
@@ -290,6 +288,17 @@ class Alternator(Strategy):
         tuple: (action, explanation) where action is the recommended action (0 or 1)
                and explanation is a string explaining the decision.
         """
+        if len(self_moves) == 0:
+            other_element = 0 if self.start_with else 1
+
+            # Create the alternating sequence of actions
+            first_part = [self.start_with] * self.alternate_after
+            other_part = [other_element] * self.alternate_after
+            sequence = first_part + other_part
+
+            # Initialize a Sequential strategy using the alternating sequence
+            self.sequential = Sequential(sequence=sequence)
+
         # Delegate the decision to the underlying Sequential strategy
         return self.sequential.get_recommended_action(self_moves, opponent_moves)
 
@@ -313,7 +322,7 @@ class Pavlovian(Strategy):
         """
         # Determine the starting action based on provided value or random choice
         self.start_with_random = start_with is None
-        self.start_with = random.randint(0, 1) if start_with is None else start_with
+        self.start_with = start_with
 
         super().__init__('Pavlovian')
 
@@ -332,7 +341,8 @@ class Pavlovian(Strategy):
         if len(self_moves) == 0:
             # If no previous moves, start with the specified action or randomly
             thought = "I start randomly" if self.start_with_random else f"I start with a fixed action"
-            return self.start_with, thought
+            action = random.randint(0, 1) if self.start_with_random else self.start_with
+            return action, thought
 
         my_last = self_moves[-1]
         opponent_last = opponent_moves[-1]
@@ -457,7 +467,7 @@ class SoftMajorityRule(Strategy):
 
     def __init__(self, start_with):
         self.start_with_random = start_with is None
-        self.start_with = random.randint(0, 1) if start_with is None else start_with
+        self.start_with = start_with
 
         super().__init__('SoftMajorityRule')
 
@@ -476,7 +486,8 @@ class SoftMajorityRule(Strategy):
         if len(self_moves) == 0:
             # If no previous moves, start with the specified action or randomly
             thought = "I start randomly" if self.start_with_random else f"I start with a fixed action"
-            return self.start_with, thought
+            action = random.randint(0, 1) if self.start_with_random else self.start_with
+            return action, thought
 
         num_cooperate = sum(opponent_moves)
         num_cheat = len(opponent_moves) - num_cooperate
@@ -490,5 +501,4 @@ class SoftMajorityRule(Strategy):
 if __name__ == '__main__':
     pass
 
-# TODO all strategies that start with random, must randomize this variable at the beginning of each
-#  game
+# TODO certain survival bias

@@ -14,12 +14,14 @@ class Tournament:
                  initial_player_score: int,
                  top_percentage: float,
                  mistake_chance: float,
+                 survival_bias: float,
                  debug: bool = False):
 
         self.rounds_per_game = rounds_per_game
         self.games_between_players = games_between_players
         self.top_percentage = top_percentage  # the percentage of top players to be multiplied to the next round
         self.mistake_chance = mistake_chance
+        self.survival_bias = survival_bias
         self.debug = debug
 
         self.players = self.generate_players(strategies, copies_of_each_strategy, initial_player_score)
@@ -66,8 +68,44 @@ class Tournament:
         for game in games:
             game.run(mistake_chance=self.mistake_chance)
 
+
+
     def sort_players(self):
         self.players.sort(key=lambda player: float(player.score), reverse=True)
+
+
+    def sort_players2(self):
+        random_indices = self.get_random_indices(range(len(self.players)),
+                                                 reverse=True, randomness=self.survival_bias)
+
+    @staticmethod
+    def get_random_indices(original_array, reverse=False, randomness=0.0):
+        array = copy.copy(original_array)
+
+        # Sort the array in the specified order
+        array.sort(reverse=reverse)
+
+        array_length = len(array)
+
+        # Calculate the number of elements to shuffle based on randomness
+        num_elements_to_shuffle = int(randomness * array_length)
+
+        # Generate indices of elements to be shuffled
+        shuffled_indices = random.sample(range(array_length), num_elements_to_shuffle)
+
+        sublist = []
+
+        for i in shuffled_indices:
+            sublist.append(array[i])
+
+        np.random.shuffle(sublist)
+
+        for i, index in enumerate(shuffled_indices):
+            array[index] = sublist[i]
+
+        if not set(original_array) == set(array):
+            raise Exception()
+        return array
 
     def get_top_players(self):
         self.sort_players()
@@ -78,7 +116,7 @@ class Tournament:
         return top_players
 
     def multiply_top_players(self):
-
+        """Multiply the top players with a defined error"""
         top_players = self.get_top_players()
 
         max_score = max([player.score for player in top_players])
@@ -114,10 +152,12 @@ class Tournament:
 
     def get_strategies_counter(self):
         strategies_counter = {}
+        total_amount_seen = 0
         for player in self.players:
             strategy_name = str(player.strategy)
             amount = strategies_counter.get(strategy_name, 0) + 1
             strategies_counter[strategy_name] = amount
+            total_amount_seen += 1
         return strategies_counter
 
 
@@ -126,28 +166,29 @@ if __name__ == '__main__':
         GoodyTwoShoes(),
         Cheater(),
         Joker(threshold_to_cooperate=0.5),
-        CopyCat(start_with=None),
+        # CopyCat(start_with=None),
         CopyKitten(defined_limit=2, start_with=1),
         Businessman(random_actions=4, kindness_limit=0, copy_kitten_limit=2, copy_kitten_start_with=1),
-        Grudger(defined_limit=3),
-        Sequential(sequence=[1, 0, 0, 1, 1, 0]),
+        # Grudger(defined_limit=3),
+        # Sequential(sequence=[1, 0, 0, 1, 1, 0]),
         Alternator(alternate_after=2, start_with=1),
-        Pavlovian(start_with=1),
-        Forgiver(grudge_limit=3, copy_kitten_limit=2, copy_kitten_start_with=1),
-        GenerousCopyKat(forgiveness_prob=0.2),
-        SoftMajorityRule(start_with=1),
+        # Pavlovian(start_with=1),
+        Forgiver(grudge_limit=2, copy_kitten_limit=2, copy_kitten_start_with=1),
+        # GenerousCopyKat(forgiveness_prob=0.2),
+        # SoftMajorityRule(start_with=1),
     ]
 
     tournament = Tournament(strategies=tournament_strategies,
-                            copies_of_each_strategy=10,
+                            copies_of_each_strategy=5,
                             rounds_per_game=100,
-                            games_between_players=3,
+                            games_between_players=2,
                             initial_player_score=100,
-                            top_percentage=0.15,
+                            top_percentage=0.8,
                             mistake_chance=0.05,
+                            survival_bias=0.1,
                             debug=False)
 
-    generations = 10
+    generations = 5
 
     strategies_components = []
 
@@ -155,8 +196,8 @@ if __name__ == '__main__':
     for generation in range(generations):
         d = tournament.get_strategies_counter()
         new_d = {name: str(d.get(name, 0)).zfill(3) for name in names}
-        strategies_components.append(new_d)
-        print(f'\nBefore tournament #{generation + 1}:\n{new_d}\n')
+        strategies_components.append(d)
+        print(f'\nBefore tournament #{generation + 1} ({len(tournament.players)} players):\n{d}\n')
 
         tournament.run()
         tournament.sort_players()
@@ -165,8 +206,8 @@ if __name__ == '__main__':
 
     d = tournament.get_strategies_counter()
     new_d = {name: str(d.get(name, 0)).zfill(3) for name in names}
-    strategies_components.append(new_d)
-    print(f'\nAfter all tournaments:\n{new_d}\n')
+    strategies_components.append(d)
+    print(f'\nAfter all tournaments:\n{d}\n')
 
     d = {key: value for key, value in tournament.__dict__.items() if key not in ['players', 'debug']}
 

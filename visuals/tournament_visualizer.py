@@ -27,11 +27,10 @@ def preprocess_data(components, text_to_display):
 
     # Create a DataFrame from the data
     df = pd.DataFrame(components)
-    df = df.astype(int)
+    # df = df.astype(int)
 
     # Calculate the total to normalize the data
     total = df.iloc[0].sum()
-    df = df.apply(lambda value: value / total)
 
     return df, text
 

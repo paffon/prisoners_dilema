@@ -15,3 +15,7 @@ class Strategy(ABC):
         result = f'{self.name}{s}'
 
         return result
+
+    @abstractmethod
+    def get_recommended_action(self, self_moves, opponent_moves):
+        pass
